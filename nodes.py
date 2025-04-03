@@ -3,8 +3,6 @@ import shutil
 from PIL import Image
 import comfy.utils
 
-
-
 class BatchImageRenamer:
     """
     批量图片重命名与格式转换节点
@@ -13,32 +11,23 @@ class BatchImageRenamer:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "输入文件目录": ("STRING", {
+                "source_folder": ("STRING", {
                     "default": "", 
                     "multiline": False,
                     "placeholder": "源文件夹绝对路径（如 /path/to/input）"
                 }),
-                "命名后保存目录": ("STRING", {
+                "target_folder": ("STRING", {
                     "default": "", 
                     "multiline": False,
                     "placeholder": "目标文件夹绝对路径（如 /path/to/output）"
                 }),
-                "文件名修改": ("STRING", {
+                "filename_template": ("STRING", {
                     "default": "image_{index:04d}",
                     "placeholder": "文件名模板（可用{index}占位符）"
-                }),           
-                "start_index": ("INT", {"default": 1, "min": 0, "max": 999999}),
-                "文件格式": (["jpg", "png", "webp"], {"default": "jpg"}),
-                "overwrite": ("BOOLEAN", {"default": False}),
-
-
-                "info": ("STRING", {
-                    "default": "📖 使用教程：\n1. 输入源/目标文件夹绝对路径\n2. 文件名模板可用 {index} 占位符\n3. 支持格式转换（jpg/png/webp）\n4. 设置起始索引和覆盖选项",
-                    "multiline": True,
-                    "disabled": True,  # 禁止编辑
-                    "hidden": False    # 确保字段可见
                 }),
-                
+                "start_index": ("INT", {"default": 1, "min": 0, "max": 999999}),
+                "new_extension": (["jpg", "png", "webp"], {"default": "jpg"}),
+                "overwrite": ("BOOLEAN", {"default": False}),
             }
         }
     
@@ -48,18 +37,18 @@ class BatchImageRenamer:
     CATEGORY = "✍木子AI做号工具微信stone_liwei✍"
     OUTPUT_NODE = True
 
-    def rename_images(self, 输入文件目录, 命名后保存目录, 文件名修改, start_index, new_extension, overwrite):
+    def rename_images(self, source_folder, target_folder, filename_template, start_index, new_extension, overwrite):
         # 输入验证
-        if not os.path.exists(输入文件目录):
-            raise ValueError(f"❌ 源文件夹不存在: {输入文件目录}")
+        if not os.path.exists(source_folder):
+            raise ValueError(f"❌ 源文件夹不存在: {source_folder}")
             
-        os.makedirs(命名后保存目录, exist_ok=True)
+        os.makedirs(target_folder, exist_ok=True)
 
         # 获取所有图片文件
         supported_ext = ['.jpg', '.jpeg', '.png', '.webp']
         image_files = []
-        for f in os.listdir(输入文件目录):
-            file_path = os.path.join(输入文件目录, f)
+        for f in os.listdir(source_folder):
+            file_path = os.path.join(source_folder, f)
             if os.path.isfile(file_path) and os.path.splitext(f)[1].lower() in supported_ext:
                 image_files.append(file_path)
 
@@ -71,8 +60,8 @@ class BatchImageRenamer:
         for idx, src_path in enumerate(sorted(image_files), start=start_index):
             try:
                 # 生成新文件名
-                new_filename = 文件名修改.format(index=idx)
-                new_path = os.path.join(命名后保存目录, f"{new_filename}.{new_extension}")
+                new_filename = filename_template.format(index=idx)
+                new_path = os.path.join(target_folder, f"{new_filename}.{new_extension}")
 
                 # 处理重复文件
                 if os.path.exists(new_path) and not overwrite:
@@ -91,15 +80,7 @@ class BatchImageRenamer:
             except Exception as e:
                 comfy.utils.print_error(f"处理文件失败 {src_path}: {str(e)}")
 
-        return {"ui": {"text": [f"成功处理 {success_count}/{len(image_files)} 文件"]}, "result": (f"完成！输出至：{命名后保存目录}",)}
+        return {"ui": {"text": [f"成功处理 {success_count}/{len(image_files)} 文件"]}, "result": (f"完成！输出至：{target_folder}",)}
 
-
-
-
-
-NODE_CLASS_MAPPINGS = {
-"BatchImageRenamer": BatchImageRenamer
-}
-NODE_DISPLAY_NAME_MAPPINGS = {
-"BatchImageRenamer": "⒈批量图片重命名格式转换😋微信stone_liwei"
-}
+NODE_CLASS_MAPPINGS = {"BatchImageRenamer": BatchImageRenamer}
+NODE_DISPLAY_NAME_MAPPINGS = {"BatchImageRenamer": "⒈批量图片重命名和格式转换😋微信stone_liwei"}
