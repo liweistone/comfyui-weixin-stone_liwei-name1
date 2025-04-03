@@ -101,5 +101,5 @@ NODE_CLASS_MAPPINGS = {
 "BatchImageRenamer": BatchImageRenamer
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-"BatchImageRenamer": "⒈批量图片重命名😋微信stone_liwei"
+"BatchImageRenamer": "⒈批量图片重命名格式转换😋微信stone_liwei"
 }
